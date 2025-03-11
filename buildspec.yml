@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 20  # You can specify other versions like 18, 19, etc., based on need
+    commands:
+      - echo "Install phase completed. Docker ready."
+  pre_build:
+    commands:
+      - echo "Pre-build phase started..."
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t my-app-image .
+      - echo "Docker image built successfully."
+      - echo "Running Docker container..."
+      - docker run -d -p 8080:8080 --name my-app-container my-app-image
+      - echo "Docker container is running."
+  post_build:
+    commands:
+      - echo "Post-build phase completed."
+artifacts:
+  files:
+    - '**/*'  # Collect all files if needed as output artifacts
