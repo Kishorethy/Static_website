@@ -11,7 +11,7 @@ pipeline {
     }
 
     triggers {
-        pollSCM('* * * * *') // Poll every minute (can be adjusted)
+        pollSCM('* * * * *') // Poll every minute (adjust as needed)
     }
 
     stages {
@@ -52,7 +52,6 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube scan
                     withSonarQubeEnv(SONARQUBE_SERVER) {
                         sh '/opt/sonarscanner/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner -Dsonar.projectKey=Static_website -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqp_5eebaede6912e32b144b52f78226b3ec6aeb3653'
                     }
@@ -85,12 +84,10 @@ pipeline {
 
     post {
         failure {
-            stage('Rollback Deployment') {
-                steps {
-                    script {
-                        echo "Rolling back to previous stable version..."
-                        sh 'docker pull ${DOCKER_IMAGE}:stable && docker run -d ${DOCKER_IMAGE}:stable'
-                    }
+            steps {
+                script {
+                    echo "Rolling back to previous stable version..."
+                    sh 'docker pull ${DOCKER_IMAGE}:stable && docker run -d ${DOCKER_IMAGE}:stable'
                 }
             }
         }
