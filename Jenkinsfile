@@ -7,10 +7,34 @@ pipeline {
         DOCKER_CREDENTIALS_ID = '230eb724-54fb-49c6-8046-1321ed84dc9d'
         GIT_REPO = 'https://github.com/Kishorethy/Static_website.git'
         GIT_BRANCH = 'main'
-        SONARQUBE_SERVER = 'MySonarQube'  // SonarQube server name from Jenkins configuration hi 
+        SONARQUBE_SERVER = 'MySonarQube'  // SonarQube server name from Jenkins configuration
+    }
+
+    triggers {
+        pollSCM('* * * * *') // Poll every minute (can be adjusted)
     }
 
     stages {
+        stage('Check PR Merge') {
+            when {
+                expression {
+                    def changeLogSets = currentBuild.rawBuild.changeSets
+                    def isMergedPR = false
+                    for (changeSet in changeLogSets) {
+                        for (entry in changeSet.items) {
+                            if (entry.msg.contains('Merge pull request')) {
+                                isMergedPR = true
+                            }
+                        }
+                    }
+                    return isMergedPR
+                }
+            }
+            steps {
+                echo "Pipeline triggered by PR merge to ${GIT_BRANCH}"
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
@@ -39,7 +63,11 @@ pipeline {
         stage('Testing') {
             steps {
                 script {
-                    sh 'docker run -d ${DOCKER_IMAGE}'
+                    try {
+                        sh 'docker run -d ${DOCKER_IMAGE}'
+                    } catch (Exception e) {
+                        error("Tests failed, triggering rollback...")
+                    }
                 }
             }
         }
@@ -49,6 +77,19 @@ pipeline {
                 script {
                     docker.withRegistry('', "${DOCKER_CREDENTIALS_ID}") {
                         sh 'docker push ${DOCKER_IMAGE}:${DOCKER_TAG}'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            stage('Rollback Deployment') {
+                steps {
+                    script {
+                        echo "Rolling back to previous stable version..."
+                        sh 'docker pull ${DOCKER_IMAGE}:stable && docker run -d ${DOCKER_IMAGE}:stable'
                     }
                 }
             }
