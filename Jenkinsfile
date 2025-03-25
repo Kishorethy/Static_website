@@ -10,10 +10,6 @@ pipeline {
         SONARQUBE_SERVER = 'MySonarQube'  // SonarQube server name from Jenkins configuration
     }
 
-    triggers {
-        pollSCM('* * * * *') // Poll every minute (adjust as needed)
-    }
-
     stages {
         stage('Check PR Merge') {
             when {
