@@ -7,7 +7,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = '230eb724-54fb-49c6-8046-1321ed84dc9d'
         GIT_REPO = 'https://github.com/Kishorethy/Static_website.git'
         GIT_BRANCH = 'main'
-        SONARQUBE_SERVER = 'MySonarQube'  // SonarQube server name from Jenkins configuration
+        SONARQUBE_SERVER = 'MySonarQube'  // SonarQube server name from Jenkins configuration hi 
     }
 
     stages {
