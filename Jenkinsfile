@@ -11,7 +11,7 @@ pipeline {
     }
 
     triggers {
-        pollSCM('* * * * *') // Poll SCM (adjust as needed)
+        pollSCM('* * * * *') // Poll SCM (adjust as neededaa)
     }
 
     stages {
